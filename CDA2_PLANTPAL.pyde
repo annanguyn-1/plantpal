@@ -23,6 +23,7 @@ current_screen = 0
 cups = 0
 streak = 0
 selected_plant = 0
+
 last_completed = ""
 last_opened_date = ""
 
@@ -33,7 +34,6 @@ garden = []
 timer_running = False
 timer_minutes = 30
 timer_ends_at = 0
-timer_remaining = 0   # milliseconds left when paused (0 = not started)
 
 heading_font = None
 body_font = None
@@ -43,19 +43,19 @@ body_font = None
 
 def setup():
     global heading_font, body_font
+
     size(430, 800)
     smooth(8)
+
     heading_font = createFont("Georgia", 32)
     body_font = createFont("Arial", 16)
+
     load_progress()
     check_new_day()
 
 
 # draw() continuously updates the screen.
 def draw():
-    # Notices a new day even if the app stays open past midnight.
-    check_new_day()
-
     background(*BACKGROUND_COLOUR)
 
     if current_screen == 0:
@@ -74,6 +74,7 @@ def draw_today_screen():
         "PlantPal",
         "Grow a garden, one glass at a time"
     )
+
     draw_streak_card()
     draw_timer_card()
     draw_growing_card()
@@ -97,7 +98,11 @@ def draw_streak_card():
 
     textFont(heading_font)
     textSize(22)
-    text(str(streak) + " " + day_word, 40, 157)
+    text(
+        str(streak) + " " + day_word,
+        40,
+        157
+    )
 
 
 def draw_timer_card():
@@ -121,7 +126,12 @@ def draw_growing_card():
     textAlign(CENTER)
     textFont(heading_font)
     textSize(23)
-    text(PLANT_NAMES[selected_plant], width / 2, 226)
+
+    text(
+        PLANT_NAMES[selected_plant],
+        width / 2,
+        226
+    )
 
     # Plant selection arrows
     draw_selector_button(53, 265, False)
@@ -134,12 +144,25 @@ def draw_growing_card():
 
     # Grass
     fill(168, 199, 124)
-    arc(width / 2, 418, 205, 105, PI, TWO_PI)
+    arc(
+        width / 2,
+        418,
+        205,
+        105,
+        PI,
+        TWO_PI
+    )
 
     draw_progress_circle()
 
     # Draw the selected plant
-    draw_plant(width / 2, 434, cups, selected_plant, 0.85)
+    draw_plant(
+        width / 2,
+        434,
+        cups,
+        selected_plant,
+        0.85
+    )
 
     draw_progress_message()
     draw_water_drops()
@@ -150,12 +173,28 @@ def draw_progress_circle():
     noFill()
     stroke(213, 224, 201)
     strokeWeight(9)
-    ellipse(width / 2, 376, 226, 226)
+
+    ellipse(
+        width / 2,
+        376,
+        226,
+        226
+    )
 
     # Completed part of the circle
     stroke(*GREEN)
+
     progress = TWO_PI * cups / float(DAILY_GOAL)
-    arc(width / 2, 376, 226, 226, -HALF_PI, -HALF_PI + progress)
+
+    arc(
+        width / 2,
+        376,
+        226,
+        226,
+        -HALF_PI,
+        -HALF_PI + progress
+    )
+
     noStroke()
 
 
@@ -172,7 +211,10 @@ def draw_progress_message():
     elif cups_remaining == 1:
         message = "1 cup until it blooms"
     else:
-        message = str(cups_remaining) + " cups until it blooms"
+        message = (
+            str(cups_remaining)
+            + " cups until it blooms"
+        )
 
     text(message, width / 2, 510)
 
@@ -187,13 +229,22 @@ def draw_water_drops():
         else:
             drop_colour = (200, 214, 192)
 
-        draw_drop(x, 543, drop_colour, 0.62)
+        draw_drop(
+            x,
+            543,
+            drop_colour,
+            0.62
+        )
 
     fill(*TEXT_GREEN)
     textSize(12)
     textAlign(CENTER)
+
     text(
-        str(cups) + " / " + str(DAILY_GOAL) + " cups today",
+        str(cups)
+        + " / "
+        + str(DAILY_GOAL)
+        + " cups today",
         width / 2,
         574
     )
@@ -209,24 +260,47 @@ def draw_drink_button():
         button_colour = GREEN
         button_text = "+  I drank a cup"
 
-    draw_button(24, 605, 382, 60, button_colour, button_text)
+    draw_button(
+        24,
+        605,
+        382,
+        60,
+        button_colour,
+        button_text
+    )
 
 
 def draw_timer_buttons():
     fill(*TEXT_GREEN)
     textAlign(LEFT)
     textSize(12)
-    text("30-minute grow session", 30, 703)
+
+    text(
+        "30-minute grow session",
+        30,
+        703
+    )
 
     if timer_running:
         timer_button_text = "Pause"
-    elif timer_remaining > 0:
-        timer_button_text = "Resume"
     else:
         timer_button_text = "Start"
 
-    draw_small_button(207, 680, 94, 38, timer_button_text)
-    draw_small_button(311, 680, 94, 38, "Reset")
+    draw_small_button(
+        207,
+        680,
+        94,
+        38,
+        timer_button_text
+    )
+
+    draw_small_button(
+        311,
+        680,
+        94,
+        38,
+        "Reset"
+    )
 
 
 # ---------------- GARDEN SCREEN ----------------
@@ -249,7 +323,14 @@ def draw_garden_screen():
     else:
         plant_word = "plants"
 
-    text(str(len(garden)) + " " + plant_word + " grown", 42, 148)
+    text(
+        str(len(garden))
+        + " "
+        + plant_word
+        + " grown",
+        42,
+        148
+    )
 
     if len(garden) == 0:
         draw_empty_garden()
@@ -258,15 +339,27 @@ def draw_garden_screen():
 
 
 def draw_empty_garden():
-    draw_plant(width / 2, 400, 2, selected_plant, 1.0)
+    draw_plant(
+        width / 2,
+        400,
+        2,
+        selected_plant,
+        1.0
+    )
 
     fill(*TEXT_GREEN)
     textAlign(CENTER)
     textFont(body_font)
     textSize(16)
-    text("Your garden is waiting to grow.", width / 2, 480)
+
+    text(
+        "Your garden is waiting to grow.",
+        width / 2,
+        480
+    )
 
     textSize(13)
+
     text(
         "Drink 8 cups today to plant your first flower.",
         width / 2,
@@ -290,13 +383,24 @@ def draw_saved_plants():
         plant_type = int(item[0])
         plant_type = constrain(plant_type, 0, 2)
 
-        draw_plant(x, y, DAILY_GOAL, plant_type, 0.52)
+        draw_plant(
+            x,
+            y,
+            DAILY_GOAL,
+            plant_type,
+            0.52
+        )
 
         fill(*TEXT_GREEN)
         textFont(body_font)
         textSize(10)
         textAlign(CENTER)
-        text(short_date(item[1]), x, y + 38)
+
+        text(
+            short_date(item[1]),
+            x,
+            y + 38
+        )
 
 
 # ---------------- SHARED INTERFACE ----------------
@@ -324,7 +428,12 @@ def draw_header(title, subtitle):
     fill(*WHITE)
     textAlign(CENTER)
     textSize(13)
-    text("Plants: " + str(len(garden)), 375, 46)
+
+    text(
+        "Plants: " + str(len(garden)),
+        375,
+        46
+    )
 
 
 def draw_bottom_navigation():
@@ -358,34 +467,69 @@ def draw_bottom_navigation():
     text("Garden", 304, 784)
 
 
-def card(x, y, card_width, card_height, corner_radius, card_colour):
+def card(x, y, card_width, card_height,
+         corner_radius, card_colour):
     noStroke()
     fill(*card_colour)
-    rect(x, y, card_width, card_height, corner_radius)
+
+    rect(
+        x,
+        y,
+        card_width,
+        card_height,
+        corner_radius
+    )
 
 
-def draw_button(x, y, button_width, button_height, button_colour, label):
+def draw_button(x, y, button_width,
+                button_height, button_colour,
+                label):
     noStroke()
     fill(*button_colour)
-    rect(x, y, button_width, button_height, 18)
+
+    rect(
+        x,
+        y,
+        button_width,
+        button_height,
+        18
+    )
 
     fill(*WHITE)
     textFont(body_font)
     textSize(17)
     textAlign(CENTER)
-    text(label, x + button_width / 2, y + 38)
+
+    text(
+        label,
+        x + button_width / 2,
+        y + 38
+    )
 
 
-def draw_small_button(x, y, button_width, button_height, label):
+def draw_small_button(x, y, button_width,
+                      button_height, label):
     noStroke()
     fill(221, 232, 197)
-    rect(x, y, button_width, button_height, 13)
+
+    rect(
+        x,
+        y,
+        button_width,
+        button_height,
+        13
+    )
 
     fill(*DARK_GREEN)
     textFont(body_font)
     textSize(12)
     textAlign(CENTER)
-    text(label, x + button_width / 2, y + 24)
+
+    text(
+        label,
+        x + button_width / 2,
+        y + 24
+    )
 
 
 def draw_selector_button(x, y, points_right):
@@ -408,8 +552,10 @@ def draw_selector_button(x, y, points_right):
 
 # ---------------- PLANT DRAWING ----------------
 
-def draw_plant(x, ground_y, stage, plant_type, scale_amount):
+def draw_plant(x, ground_y, stage,
+               plant_type, scale_amount):
     pushMatrix()
+
     translate(x, ground_y)
     scale(scale_amount)
     noStroke()
@@ -417,7 +563,13 @@ def draw_plant(x, ground_y, stage, plant_type, scale_amount):
     draw_pot()
 
     if stage > 0:
-        stem_height = map(stage, 1, DAILY_GOAL, 25, 125)
+        stem_height = map(
+            stage,
+            1,
+            DAILY_GOAL,
+            25,
+            125
+        )
 
         # Draw the stem
         stroke(*GREEN)
@@ -427,20 +579,42 @@ def draw_plant(x, ground_y, stage, plant_type, scale_amount):
 
         # Leaves appear as the user drinks water.
         if stage >= 2:
-            draw_leaf(-2, -stem_height * 0.42, -1)
+            draw_leaf(
+                -2,
+                -stem_height * 0.42,
+                -1
+            )
 
         if stage >= 4:
-            draw_leaf(2, -stem_height * 0.65, 1)
+            draw_leaf(
+                2,
+                -stem_height * 0.65,
+                1
+            )
 
         if stage >= 6:
-            draw_leaf(-2, -stem_height * 0.82, -1)
+            draw_leaf(
+                -2,
+                -stem_height * 0.82,
+                -1
+            )
 
         # The flower appears after eight cups.
         if stage >= DAILY_GOAL:
-            draw_flower(0, -stem_height, plant_type)
+            draw_flower(
+                0,
+                -stem_height,
+                plant_type
+            )
         else:
             fill(120, 169, 87)
-            ellipse(0, -stem_height, 18 + stage, 14 + stage / 2)
+
+            ellipse(
+                0,
+                -stem_height,
+                18 + stage,
+                14 + stage / 2
+            )
 
     popMatrix()
 
@@ -448,7 +622,13 @@ def draw_plant(x, ground_y, stage, plant_type, scale_amount):
 def draw_pot():
     # Flowerpot
     fill(140, 92, 60)
-    quad(-38, 0, 38, 0, 28, 54, -28, 54)
+
+    quad(
+        -38, 0,
+        38, 0,
+        28, 54,
+        -28, 54
+    )
 
     # Soil
     fill(112, 68, 46)
@@ -457,10 +637,19 @@ def draw_pot():
 
 def draw_leaf(x, y, direction):
     pushMatrix()
+
     translate(x, y)
     rotate(direction * 0.45)
+
     fill(120, 169, 87)
-    ellipse(direction * 18, 0, 38, 17)
+
+    ellipse(
+        direction * 18,
+        0,
+        38,
+        17
+    )
+
     popMatrix()
 
 
@@ -470,8 +659,10 @@ def draw_flower(x, y, plant_type):
 
     if plant_type == 1:
         draw_sunflower()
+
     elif plant_type == 2:
         draw_tulip()
+
     else:
         draw_daisy()
 
@@ -484,8 +675,13 @@ def draw_sunflower():
     # Draw 12 yellow petals.
     for index in range(12):
         pushMatrix()
-        rotate(TWO_PI * index / 12.0)
+
+        rotate(
+            TWO_PI * index / 12.0
+        )
+
         ellipse(0, -25, 16, 31)
+
         popMatrix()
 
     fill(107, 68, 39)
@@ -496,6 +692,7 @@ def draw_tulip():
     fill(241, 124, 141)
 
     beginShape()
+
     vertex(-27, 8)
     vertex(-24, -28)
     vertex(-8, -12)
@@ -503,7 +700,13 @@ def draw_tulip():
     vertex(9, -12)
     vertex(27, -28)
     vertex(23, 9)
-    bezierVertex(18, 29, -18, 29, -27, 8)
+
+    bezierVertex(
+        18, 29,
+        -18, 29,
+        -27, 8
+    )
+
     endShape(CLOSE)
 
 
@@ -513,26 +716,51 @@ def draw_daisy():
     # Draw 10 white petals.
     for index in range(10):
         pushMatrix()
-        rotate(TWO_PI * index / 10.0)
+
+        rotate(
+            TWO_PI * index / 10.0
+        )
+
         ellipse(0, -23, 15, 30)
+
         popMatrix()
 
     fill(242, 201, 76)
     ellipse(0, 0, 31, 31)
 
 
-def draw_drop(x, y, drop_colour, scale_amount):
+def draw_drop(x, y, drop_colour,
+              scale_amount):
     pushMatrix()
+
     translate(x, y)
     scale(scale_amount)
+
     noStroke()
     fill(*drop_colour)
 
     beginShape()
+
     vertex(0, -19)
-    bezierVertex(-5, -9, -14, 0, -14, 10)
-    bezierVertex(-14, 29, 14, 29, 14, 10)
-    bezierVertex(14, 0, 5, -9, 0, -19)
+
+    bezierVertex(
+        -5, -9,
+        -14, 0,
+        -14, 10
+    )
+
+    bezierVertex(
+        -14, 29,
+        14, 29,
+        14, 10
+    )
+
+    bezierVertex(
+        14, 0,
+        5, -9,
+        0, -19
+    )
+
     endShape(CLOSE)
 
     popMatrix()
@@ -551,9 +779,11 @@ def mousePressed():
             current_screen = 0
         else:
             current_screen = 1
+
         return
 
-    # The remaining buttons only work on the Today screen.
+    # The remaining buttons only work
+    # on the Today screen.
     if current_screen != 0:
         return
 
@@ -566,10 +796,11 @@ def mousePressed():
         change_plant(1)
 
     # Drink water button
-    elif inside(24, 605, 382, 60) and cups < DAILY_GOAL:
+    elif (inside(24, 605, 382, 60)
+          and cups < DAILY_GOAL):
         log_cup()
 
-    # Start, pause or resume timer
+    # Start or pause timer
     elif inside(207, 680, 94, 38):
         toggle_timer()
 
@@ -580,9 +811,20 @@ def mousePressed():
 
 # Checks whether the mouse is inside a button.
 def inside(x, y, button_width, button_height):
-    inside_horizontally = mouseX >= x and mouseX <= x + button_width
-    inside_vertically = mouseY >= y and mouseY <= y + button_height
-    return inside_horizontally and inside_vertically
+    inside_horizontally = (
+        mouseX >= x
+        and mouseX <= x + button_width
+    )
+
+    inside_vertically = (
+        mouseY >= y
+        and mouseY <= y + button_height
+    )
+
+    return (
+        inside_horizontally
+        and inside_vertically
+    )
 
 
 # ---------------- WATER AND PLANT LOGIC ----------------
@@ -617,99 +859,100 @@ def complete_daily_goal():
 
     today = get_today()
 
-    # Prevent the same plant from being added more than once today.
+    # Prevent the same plant from being
+    # added more than once today.
     if today == last_completed:
         return
 
-    # Keep the streak only if yesterday was also completed.
-    if last_completed == get_yesterday():
-        streak += 1
-    else:
+    # Start or increase the streak.
+    if last_completed == "":
         streak = 1
+    else:
+        streak += 1
 
     # Save the new plant.
-    garden.append([selected_plant, today])
+    new_plant = [
+        selected_plant,
+        today
+    ]
+
+    garden.append(new_plant)
     last_completed = today
 
 
 # ---------------- REMINDER TIMER ----------------
 
 def toggle_timer():
-    global timer_running, timer_ends_at, timer_remaining
+    global timer_running, timer_ends_at
 
     if timer_running:
-        # Pause: remember how much time was left.
-        timer_remaining = max(0, timer_ends_at - millis())
         timer_running = False
     else:
-        # Resume, or start fresh if nothing is left.
-        if timer_remaining <= 0:
-            timer_remaining = timer_minutes * 60 * 1000
-        timer_ends_at = millis() + timer_remaining
         timer_running = True
+
+        timer_ends_at = (
+            millis()
+            + timer_minutes * 60 * 1000
+        )
 
 
 def reset_timer():
-    global timer_running, timer_ends_at, timer_remaining
+    global timer_running, timer_ends_at
 
     timer_running = False
     timer_ends_at = 0
-    timer_remaining = 0
 
 
 def check_timer():
-    global timer_running, timer_remaining
+    global timer_running
 
-    if timer_running and millis() >= timer_ends_at:
+    if (timer_running
+            and millis() >= timer_ends_at):
+
         timer_running = False
-        timer_remaining = 0
-        surface.setTitle("PlantPal - Time for water!")
+
+        surface.setTitle(
+            "PlantPal - Time for water!"
+        )
 
 
 def timer_text():
-    if timer_running:
-        remaining = max(0, timer_ends_at - millis())
-    elif timer_remaining > 0:
-        remaining = timer_remaining
-    else:
+    if not timer_running:
         return "Ready when you are"
 
-    total_seconds = remaining // 1000
-    minutes_left = total_seconds // 60
+    remaining = timer_ends_at - millis()
+    remaining = max(0, remaining)
+
+    total_seconds = remaining / 1000
+    minutes_left = total_seconds / 60
     seconds_left = total_seconds % 60
 
-    result = nf(minutes_left, 2) + ":" + nf(seconds_left, 2)
-
-    if not timer_running:
-        result += "  (paused)"
-
-    return result
+    return (
+        nf(minutes_left, 2)
+        + ":"
+        + nf(seconds_left, 2)
+    )
 
 
 # ---------------- SAVING PROGRESS ----------------
 
 def check_new_day():
-    global cups, streak, last_opened_date
+    global cups, last_opened_date
 
     today = get_today()
 
-    # Nothing to do if we already checked today.
-    if last_opened_date == today:
-        return
-
     saved_date = last_opened_date
+
     if saved_date == "":
         saved_date = last_completed
 
     # Reset cups when the date changes.
-    if saved_date != "" and saved_date != today:
+    if (saved_date != ""
+            and saved_date != today):
         cups = 0
 
-    # A missed day breaks the streak.
-    if last_completed != today and last_completed != get_yesterday():
-        streak = 0
-
     last_opened_date = today
+
     save_progress()
 
 
@@ -717,29 +960,51 @@ def save_progress():
     # Save the main variables on the first line.
     first_line = (
         str(cups)
-        + "|" + str(streak)
-        + "|" + str(selected_plant)
-        + "|" + last_completed
-        + "|" + last_opened_date
+        + "|"
+        + str(streak)
+        + "|"
+        + str(selected_plant)
+        + "|"
+        + last_completed
+        + "|"
+        + last_opened_date
     )
 
     lines = [first_line]
 
     # Save one plant on each following line.
     for item in garden:
-        lines.append(str(item[0]) + "|" + item[1])
+        plant_line = (
+            str(item[0])
+            + "|"
+            + item[1]
+        )
 
-    saveStrings("data/plantpal_progress.txt", lines)
+        lines.append(plant_line)
+
+    saveStrings(
+        "data/plantpal_progress.txt",
+        lines
+    )
 
 
 def load_progress():
-    global cups, streak, selected_plant
-    global last_completed, last_opened_date, garden
+    global cups
+    global streak
+    global selected_plant
+    global last_completed
+    global last_opened_date
+    global garden
 
     try:
-        lines = loadStrings("plantpal_progress.txt")
+        lines = loadStrings(
+            "plantpal_progress.txt"
+        )
 
-        if lines is None or len(lines) == 0:
+        if lines is None:
+            return
+
+        if len(lines) == 0:
             return
 
         # Load the main variables.
@@ -747,7 +1012,11 @@ def load_progress():
 
         cups = int(settings[0])
         streak = int(settings[1])
-        selected_plant = int(settings[2]) % len(PLANT_NAMES)
+
+        selected_plant = (
+            int(settings[2])
+            % len(PLANT_NAMES)
+        )
 
         if len(settings) > 3:
             last_completed = settings[3]
@@ -760,11 +1029,18 @@ def load_progress():
 
         for line in lines[1:]:
             parts = line.split("|")
+
             if len(parts) == 2:
-                garden.append([int(parts[0]), parts[1]])
+                saved_plant = [
+                    int(parts[0]),
+                    parts[1]
+                ]
+
+                garden.append(saved_plant)
 
     except:
-        # Start fresh if the save file cannot be opened.
+        # Start fresh if the save file
+        # cannot be opened.
         cups = 0
         streak = 0
         selected_plant = 0
@@ -777,13 +1053,15 @@ def load_progress():
 
 def get_today():
     # Creates a date such as 2026-10-17.
-    return str(year()) + "-" + nf(month(), 2) + "-" + nf(day(), 2)
+    today = (
+        str(year())
+        + "-"
+        + nf(month(), 2)
+        + "-"
+        + nf(day(), 2)
+    )
 
-
-def get_yesterday():
-    # Creates yesterday's date, such as 2026-10-16.
-    yesterday = date(year(), month(), day()) - timedelta(days=1)
-    return yesterday.strftime("%Y-%m-%d")
+    return today
 
 
 def short_date(date_text):
@@ -792,14 +1070,28 @@ def short_date(date_text):
         parts = date_text.split("-")
 
         month_names = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
         ]
 
         month_number = int(parts[1])
         day_number = int(parts[2])
 
-        return str(day_number) + " " + month_names[month_number - 1]
+        return (
+            str(day_number)
+            + " "
+            + month_names[month_number - 1]
+        )
 
     except:
         return date_text
